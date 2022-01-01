@@ -405,6 +405,7 @@
   ./services/accessibility/speechd.nix
   ./services/admin/docuum.nix
   ./services/admin/meshcentral.nix
+  ./services/admin/nomachine.nix
   ./services/admin/oxidized.nix
   ./services/admin/pgadmin.nix
   ./services/admin/salt/master.nix

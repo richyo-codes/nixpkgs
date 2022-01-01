@@ -3773,6 +3773,8 @@ with pkgs;
 
   nomacs-qt6 = nomacs.override { qtVersion = 6; };
 
+  nomachine = callPackage ../tools/admin/nomachine { };
+
   nth = with python3Packages; toPythonApplication name-that-hash;
 
   nvchecker =
