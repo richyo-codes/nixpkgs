@@ -32,6 +32,7 @@ let
   versionMinor = "1";
   versionBuild_x86_64 = "1";
   versionBuild_i686 = "1";
+  versionBuild_aarch64 = "1";
 
   urls = {
     "x86_64-linux" = {
@@ -43,8 +44,12 @@ let
       sha256 = "sha256-UDvrjb/2rXvSvpiA+UwiVi4YyXhFLNiEtrszqjAPGXc=";
     };
     "aarch64-linux" = {
-      url = "https://download.nomachine.com/download/${versionMajor}/Linux/nomachine_${versionMajor}.${versionMinor}_${versionBuild_aarch64}_aarch64.tar.gz";
-      sha256 = "sha256-<INSERT-HASH-HERE>";
+      url = "https://download.nomachine.com/download/${versionMajor}/Arm/nomachine_${versionMajor}.${versionMinor}_${versionBuild_aarch64}_aarch64.tar.gz";
+      sha256 = "sha256-S7PhQI7MkEGEMvSv1dqOtaRMrEpVNsB9yyxz91beXr8=";
+    };
+    "aarch64-unknown-linux-gnu" = {
+      url = "https://download.nomachine.com/download/${versionMajor}/Arm/nomachine_${versionMajor}.${versionMinor}_${versionBuild_aarch64}_aarch64.tar.gz";
+      sha256 = "sha256-S7PhQI7MkEGEMvSv1dqOtaRMrEpVNsB9yyxz91beXr8=";
     };
     # "armv7l-linux" = {
     #   url = "https://download.nomachine.com/download/${versionMajor}/Linux/nomachine_${versionMajor}.${versionMinor}_${versionBuild_armv7l}_armv7hf.tar.gz";
@@ -72,8 +77,8 @@ stdenv.mkDerivation rec {
     tar xf "nxrunner.tar.gz"
     tar xf "nxplayer.tar.gz"
     rm $(find . -maxdepth 1 -type f)
-    rm -r NX/share/src/nxusb-legacy
-    rm NX/bin/nxusbd-legacy NX/lib/libnxusb-legacy.so
+    #rm -r NX/share/src/nxusb-legacy
+    #rm NX/bin/nxusbd-legacy NX/lib/libnxusb-legacy.so
   '';
 
   nativeBuildInputs = [ uni2ascii coreutils file makeWrapper autoPatchelfHook linuxPackages.kernel.moduleBuildDependencies ];
@@ -247,6 +252,6 @@ stdenv.mkDerivation rec {
       free = false;
     };
     maintainers = with maintainers; [ talyz ];
-    platforms = [ "x86_64-linux" "i686-linux" ];
+    platforms = [ "x86_64-linux" "i686-linux" "aarch64-unknown-linux-gnu" ];
   };
 }
