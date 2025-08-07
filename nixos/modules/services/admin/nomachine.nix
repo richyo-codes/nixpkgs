@@ -44,18 +44,18 @@ let
 in
 {
   options.services.nxserver = with lib; {
-    enable = mkEnableOption (lib.mdDoc ''the NoMachine remote desktop server'');
+    enable = mkEnableOption ( ''the NoMachine remote desktop server'');
 
     openFirewall = mkOption {
       type = types.bool;
       default = false;
-      description = lib.mdDoc ''
+      description = ''
         Whether to open the configured port in the firewall.
       '';
     };
 
     package = mkOption {
-      description = lib.mdDoc ''
+      description = ''
         Package containing the nxserver package and configuration files.
       '';
       type = types.package;
@@ -64,7 +64,7 @@ in
     };
 
     serverSettings = lib.mkOption {
-      description = lib.mdDoc ''
+      description = ''
         Settings for the NoMachine nxserver instance.
       '';
 
@@ -77,18 +77,18 @@ in
       type = lib.types.submodule {
         freeformType = settingsFmt.type;
 
-        options.EnableDebug = lib.mkEnableOption (lib.mdDoc ''debug output'');
+        options.EnableDebug = lib.mkEnableOption (''debug output'');
         options.SessionLogLevel = lib.mkOption {
           type = lib.types.int;
           default = 6;
           example = 6;
-          description = lib.mdDoc ''Debug output level'';
+          description = ''Debug output level'';
         };
       };
     };
 
     nodeSettings = lib.mkOption {
-      description = lib.mdDoc ''
+      description = ''
         Settings for the NoMachine nxnode instance.
       '';
 
@@ -101,12 +101,12 @@ in
       type = lib.types.submodule {
         freeformType = settingsFmt.type;
 
-        options.EnableDebug = lib.mkEnableOption (lib.mdDoc ''debug output'');
+        options.EnableDebug = lib.mkEnableOption ( ''debug output'');
         options.SessionLogLevel = lib.mkOption {
           type = lib.types.int;
           default = 6;
           example = 6;
-          description = lib.mdDoc ''Debug output level'';
+          description = ''Debug output level'';
         };
       };
     };
