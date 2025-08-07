@@ -28,43 +28,49 @@
 ,
 }:
 let
-  versionMajor = "7.10";
+  versionMajor = "8.13";
   versionMinor = "1";
   versionBuild_x86_64 = "1";
   versionBuild_i686 = "1";
+
+  urls = {
+    "x86_64-linux" = {
+      url = "https://download.nomachine.com/download/${versionMajor}/Linux/nomachine_${versionMajor}.${versionMinor}_${versionBuild_x86_64}_x86_64.tar.gz";
+      sha256 = "sha256-8rxlxdtGU8avpvYJr+bpnsy5v91sqtlij/MCGWrcanY=";
+    };
+    "i686-linux" = {
+      url = "https://download.nomachine.com/download/${versionMajor}/Linux/nomachine_${versionMajor}.${versionMinor}_${versionBuild_i686}_i686.tar.gz";
+      sha256 = "sha256-UDvrjb/2rXvSvpiA+UwiVi4YyXhFLNiEtrszqjAPGXc=";
+    };
+    "aarch64-linux" = {
+      url = "https://download.nomachine.com/download/${versionMajor}/Linux/nomachine_${versionMajor}.${versionMinor}_${versionBuild_aarch64}_aarch64.tar.gz";
+      sha256 = "sha256-<INSERT-HASH-HERE>";
+    };
+    # "armv7l-linux" = {
+    #   url = "https://download.nomachine.com/download/${versionMajor}/Linux/nomachine_${versionMajor}.${versionMinor}_${versionBuild_armv7l}_armv7hf.tar.gz";
+    #   sha256 = "sha256-<INSERT-HASH-HERE>";
+    # };
+  };
+
+  platformInfo = urls.${stdenv.hostPlatform.system} or (throw "Unsupported platform: ${stdenv.hostPlatform.system}");
 in
 stdenv.mkDerivation rec {
   pname = "nomachine";
   version = "${versionMajor}.${versionMinor}";
+  src = fetchurl platformInfo;
 
-  src =
-    if stdenv.hostPlatform.system == "x86_64-linux"
-    then
-      fetchurl
-        {
-          url = "https://download.nomachine.com/download/${versionMajor}/Linux/nomachine_${version}_${versionBuild_x86_64}_x86_64.tar.gz";
-          sha256 = "sha256-alClFaNbQ76r8LukbygesWWXA5rx6VEzxK+bY5tOfO0=";
-        }
-    else if stdenv.hostPlatform.system == "i686-linux"
-    then
-      fetchurl
-        {
-          url = "https://download.nomachine.com/download/${versionMajor}/Linux/nomachine_${version}_${versionBuild_i686}_i686.tar.gz";
-          sha256 = "sha256-UDvrjb/2rXvSvpiA+UwiVi4YyXhFLNiEtrszqjAPGXc=";
-        }
-    else throw "NoMachine client is not supported on ${stdenv.hostPlatform.system}";
 
   # nxusb-legacy is only needed for kernel versions < 3
   postUnpack = ''
-    mv $(find . -type f -name nxserver.tar.gz) .
-    mv $(find . -type f -name nxnode.tar.gz) .
-    mv $(find . -type f -name nxclient.tar.gz) .
-    mv $(find . -type f -name nxplayer.tar.gz) .
-    rm -r NX/
-    tar xf nxserver.tar.gz
-    tar xf nxnode.tar.gz
-    tar xf nxclient.tar.gz
-    tar xf nxplayer.tar.gz
+    mv "$(find . -type f -name nxserver.tar.gz)" .
+    mv "$(find . -type f -name nxnode.tar.gz)" .
+    mv "$(find . -type f -name nxrunner.tar.gz)" .
+    mv "$(find . -type f -name nxplayer.tar.gz)" .
+    rm -r "NX/"
+    tar xf "nxserver.tar.gz"
+    tar xf "nxnode.tar.gz"
+    tar xf "nxrunner.tar.gz"
+    tar xf "nxplayer.tar.gz"
     rm $(find . -maxdepth 1 -type f)
     rm -r NX/share/src/nxusb-legacy
     rm NX/bin/nxusbd-legacy NX/lib/libnxusb-legacy.so
@@ -76,16 +82,18 @@ stdenv.mkDerivation rec {
   kernel = linuxPackages.kernel.dev;
   kernelVersion = linuxPackages.kernel.modDirVersion;
 
+
+  #todo search replace uname
   buildPhase = ''
-    pushd share/src/nxusb
-    KDIR="${kernel}/lib/modules/${kernelVersion}/build" make
-    cp nxusb.ko ../../../bin/drivers/
-    KDIR="${kernel}/lib/modules/${kernelVersion}/build" make clean
-    popd
+    # pushd share/src/nxusb
+    # KDIR="${kernel}/lib/modules/${kernelVersion}/build" make
+    # cp nxusb.ko ../../../bin/drivers/
+    # KDIR="${kernel}/lib/modules/${kernelVersion}/build" make clean
+    # popd
   '';
 
   installPhase = ''
-    rm bin/nxserver bin/nxclient bin/nxplayer
+    rm "bin/nxserver" "bin/nxrunner" "bin/nxplayer"
 
     mkdir -p $out/NX
     cp -r etc scripts bin lib share $out/NX/
@@ -113,6 +121,7 @@ stdenv.mkDerivation rec {
 
     # Everything is hardcoded
     for i in $out/NX/scripts/restricted/*.sh; do
+    substituteInPlace "$i" --replace /bin/uname ${coreutils}/bin/uname
       substituteInPlace "$i" --replace /bin/echo ${coreutils}/bin/echo
       substituteInPlace "$i" --replace /bin/ls ${coreutils}/bin/ls
       substituteInPlace "$i" --replace /bin/cat ${coreutils}/bin/cat
@@ -169,17 +178,20 @@ stdenv.mkDerivation rec {
       fi
     done
 
-    mkdir $out/share/applications
-    cp share/applnk/player/xdg/*.desktop $out/share/applications/
-    cp share/applnk/client/xdg-mime/*.desktop $out/share/applications/
+    mkdir "$out/share/applications"
+    cp share/applnk/player/xdg/*.desktop "$out/share/applications/"
+    cp share/applnk/runner/xdg-mime/*.desktop "$out/share/applications/"
 
-    mkdir -p $out/share/mime/packages
-    cp share/applnk/client/xdg-mime/*.xml $out/share/mime/packages/
+    mkdir -p "$out/share/mime/packages"
+    cp share/applnk/runner/xdg-mime/*.xml "$out/share/mime/packages/"
 
     for i in $out/share/applications/*.desktop; do
-      substituteInPlace "$i" --replace /usr/NX/bin $out/bin
+      substituteInPlace "$i" --replace /usr/NX/bin "$out/bin"
     done
   '';
+
+
+
 
   postFixup = ''
     # NXSERVER BEGIN
@@ -213,9 +225,9 @@ stdenv.mkDerivation rec {
     patchelf --add-needed libpam.so.0 --add-needed libkrb5.so.3 $out/NX/bin/nxexec.orig
     patchelf --add-needed libdbus-1.so.3 $out/NX/bin/nxserver.bin
 
-    # NXCLIENT BEGIN
+    # NXRUNNER BEGIN
     makeWrapper $out/bin/nxplayer.bin $out/bin/nxplayer --set NX_SYSTEM $out/NX
-    makeWrapper $out/bin/nxclient.bin $out/bin/nxclient --set NX_SYSTEM $out/NX
+    makeWrapper $out/bin/nxrunner.bin $out/bin/nxrunner --set NX_SYSTEM $out/NX
 
     # libnxcau.so needs libpulse.so.0 for audio to work, but doesn't
     # have a DT_NEEDED entry for it.
@@ -230,8 +242,8 @@ stdenv.mkDerivation rec {
     homepage = "https://www.nomachine.com/";
     sourceProvenance = with sourceTypes; [ binaryNativeCode ];
     license = {
-      fullName = "NoMachine 7 End-User License Agreement";
-      url = "https://www.nomachine.com/licensing-7";
+      fullName = "NoMachine 8 End-User License Agreement";
+      url = "https://www.nomachine.com/licensing-8";
       free = false;
     };
     maintainers = with maintainers; [ talyz ];
