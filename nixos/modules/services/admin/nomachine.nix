@@ -54,14 +54,16 @@ in
       '';
     };
 
-    package = mkOption {
-      description = ''
-        Package containing the nxserver package and configuration files.
-      '';
-      type = types.package;
-      default = pkgs.nomachine;
-      defaultText = lib.literalMD "pkgs.nomachine";
-    };
+    #package = mkOption {
+    #  description = ''
+    #    Package containing the nxserver package and configuration files.
+    #  '';
+    #  type = types.package;
+    #  default = pkgs.nomachine;
+    #  defaultText = lib.literalMD "pkgs.nomachine";
+    #};
+
+    package = mkPackageOption pkgs "nomachine" { };
 
     serverSettings = lib.mkOption {
       description = ''
@@ -304,14 +306,16 @@ in
                 chmod 0400 /etc/NX/server.lic
               fi
 
-              if [ ! -f /etc/NX/node.lic ]; then
-                cp ${cfg.package}/NX/etc.static/node.lic.sample /etc/NX/
-                /etc/NX/nxnode --validate
-                mv /etc/NX/node.lic.sample /etc/NX/node.lic
-                chown nx:root /etc/NX/node.lic
-                chmod 0400 /etc/NX/node.lic
-                /etc/NX/nxserver --validatenode
-              fi
+	      # cant seem to find node.lic.sample
+              #if [ ! -f /etc/NX/node.lic ]; then
+                
+		#cp ${cfg.package}/NX/etc.static/node.lic.sample /etc/NX/
+                #/etc/NX/nxnode --validate
+                #mv /etc/NX/node.lic.sample /etc/NX/node.lic
+                #chown nx:root /etc/NX/node.lic
+                #chmod 0400 /etc/NX/node.lic
+                #/etc/NX/nxserver --validatenode
+              #fi
 
               # This inits the database with the localhost_4000 display entry
               /etc/NX/nxserver --addtoredis
